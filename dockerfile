@@ -10,6 +10,8 @@ RUN pnpm install --frozen-lockfile
 
 COPY . .
 
+RUN pnpm run prisma generate
+
 RUN pnpm run build
 
 EXPOSE 3000
