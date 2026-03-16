@@ -35,11 +35,9 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV PNPM_HOME="/usr/local/share/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
 
-RUN addgroup --system --gid 1001 app
-RUN adduser --system --uid 1001 app
+RUN addgroup --system --gid 1001 app \
+    && adduser --system --uid 1001 app
 
 USER app
 
@@ -48,4 +46,5 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 
 EXPOSE 3000
+
 CMD ["node", "dist/main.js"]
