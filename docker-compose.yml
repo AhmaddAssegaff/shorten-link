@@ -1,4 +1,14 @@
 services:
+  app:
+    build: .
+    container_name: shorten-link-app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    env_file:
+      - .env
+
   db:
     image: postgres:16
     container_name: postgres_shorten-link
@@ -34,15 +44,6 @@ services:
       - backend
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${DB_USER}']
-  app:
-    build: .
-    container_name: shorten-link-app
-    ports:
-      - "3000:3000"
-    depends_on:
-      - postgres
-    env_file:
-      - .env
 
 volumes:
   postgres_data:
