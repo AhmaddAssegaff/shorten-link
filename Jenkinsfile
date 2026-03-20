@@ -10,19 +10,22 @@ pipeline {
                 }
             }
             steps {
-                sh '''
-                corepack enable
-                pnpm install --frozen-lockfile
-                pnpm test
-                '''
+                dir('be') {
+                    sh '''
+                    corepack enable
+                    pnpm install --frozen-lockfile
+                    pnpm test
+                    '''
+                }
             }
         }
 
         stage('Build & Deploy') {
             steps {
-                sh 'docker compose up -d --build'
+                dir('be') {
+                    sh 'docker compose up -d --build'
+                }
             }
         }
-
     }
 }
