@@ -29,13 +29,12 @@ RUN pnpm run build
 FROM base AS runner
 ENV NODE_ENV=production
 
-COPY package.json pnpm-lock.yaml ./
+RUN groupadd -g 1001 app && useradd -u 1001 -g app -s /bin/sh app
+
+COPY --chown=app:app package.json pnpm-lock.yaml ./
 RUN pnpm install --prod --frozen-lockfile --prefer-offline
 
-COPY --from=builder /app/dist ./dist
-
-RUN groupadd -g 1001 app && useradd -u 1001 -g app -s /bin/sh app
-RUN chown -R app:app /app
+COPY --from=builder --chown=app:app /app/dist ./dist
 
 USER app
 
