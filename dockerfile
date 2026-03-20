@@ -12,10 +12,12 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY prisma ./prisma/
 
 ENV PRISMA_CLI_BINARY_TARGETS=linux-musl-openssl-3.0.x
+
 RUN pnpm install --frozen-lockfile
 
-COPY . .
 RUN pnpm exec prisma generate
+
+COPY . .
 RUN pnpm run build
 
 RUN pnpm prune --prod
