@@ -1,5 +1,5 @@
 FROM node:22-alpine AS deps
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat openssl ca-certificates
 
 WORKDIR /app
 
@@ -8,16 +8,20 @@ ENV PNPM_HOME="/usr/local/share/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY prisma ./prisma/
 
 RUN pnpm install --frozen-lockfile
 
 FROM node:22-alpine AS builder
+RUN apk add --no-cache openssl
+
 WORKDIR /app
 RUN corepack enable
 ENV PNPM_HOME="/usr/local/share/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/prisma ./prisma
 COPY . .
 
 RUN pnpm exec prisma generate
