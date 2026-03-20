@@ -24,12 +24,7 @@ pipeline {
             steps {
                 dir('be') {
                     withCredentials([file(credentialsId: 'shorten-link-env', variable: 'SECRET_FILE')]) {
-                        sh """
-                            cat \$SECRET_FILE > .env
-
-                            chmod 644 .env
-                            docker compose --env-file .env up -d --build
-                        """
+                        sh "docker compose --env-file \$SECRET_FILE up -d --build"
                     }
                 }
             }
