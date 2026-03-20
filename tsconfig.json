@@ -16,7 +16,8 @@
       "esnext"
     ],
     "types": [
-      "node"
+      "node",
+      "jest"
     ],
     "pretty": true,
     "sourceMap": true,
@@ -26,6 +27,7 @@
     "skipLibCheck": true,
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "test/**/*"
   ]
 }
