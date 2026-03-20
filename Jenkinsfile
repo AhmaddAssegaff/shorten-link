@@ -1,25 +1,28 @@
 pipeline {
-    agent any
+    agent any 
 
     stages {
         stage('Test') {
+            agent {
+                docker {
+                    image 'node:22-alpine'
+                    args '-u root' 
+                }
+            }
             steps {
                 sh '''
-                docker run --rm \
-                  -v $PWD:/app \
-                  -w /app \
-                  node:22 \
-                  bash -c "corepack enable && pnpm install --frozen-lockfile && pnpm test"
+                corepack enable
+                pnpm install --frozen-lockfile
+                pnpm test
                 '''
             }
         }
 
-        stage('Deploy') {
+        stage('Build & Deploy') {
             steps {
-                sh '''
-                docker compose up -d --build
-                '''
+                sh 'docker compose up -d --build'
             }
         }
+
     }
 }
