@@ -1,7 +1,13 @@
 # --- STAGE 1: BASE ---
-FROM node:22-alpine AS base
-RUN apk add --no-cache libc6-compat openssl ca-certificates
+FROM node:22-slim AS base
+RUN apt-get update && apt-get install -y \
+    openssl \
+    ca-certificates \
+    libgnutls30 \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
+
 RUN corepack enable
 ENV PNPM_HOME="/usr/local/share/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
@@ -11,7 +17,7 @@ FROM base AS builder
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY prisma ./prisma/
 
-ENV PRISMA_CLI_BINARY_TARGETS=linux-musl-openssl-3.0.x
+ENV PRISMA_CLI_BINARY_TARGETS=debian-openssl-3.0.x
 
 RUN pnpm install --frozen-lockfile
 
@@ -24,15 +30,15 @@ RUN pnpm prune --prod
 
 # --- STAGE 3: RUNNER ---
 FROM base AS runner
-RUN apk add --no-cache openssl
 ENV NODE_ENV=production
 
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package.json ./package.json
 
-RUN addgroup --system --gid 1001 app && adduser --system --uid 1001 app
+RUN groupadd -g 1001 app && useradd -u 1001 -g app -s /bin/sh app
 RUN chown -R app:app /app
+
 USER app
 
 EXPOSE 3000
