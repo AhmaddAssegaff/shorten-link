@@ -20,21 +20,19 @@ COPY prisma ./prisma/
 ENV PRISMA_CLI_BINARY_TARGETS=debian-openssl-3.0.x
 
 RUN pnpm install --frozen-lockfile
-
 RUN pnpm exec prisma generate
 
 COPY . .
 RUN pnpm run build
 
-RUN pnpm prune --prod
-
 # --- STAGE 3: RUNNER ---
 FROM base AS runner
 ENV NODE_ENV=production
 
-COPY --from=builder /app/node_modules ./node_modules
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --prod --frozen-lockfile --prefer-offline
+
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package.json ./package.json
 
 RUN groupadd -g 1001 app && useradd -u 1001 -g app -s /bin/sh app
 RUN chown -R app:app /app
