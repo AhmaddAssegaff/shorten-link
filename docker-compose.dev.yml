@@ -1,0 +1,57 @@
+
+services:
+  app:
+    build: .
+    container_name: app-shorten-link
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    env_file:
+      - .env
+    restart: always
+    networks:
+      - backend
+
+  db:
+    image: postgres:16
+    container_name: postgres_shorten-link
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - '${DB_PORT}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
+
+  pgadmin:
+    image: dpage/pgadmin4:9.6
+    container_name: pgadmin_shorten-link
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "5050:80"
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+
+volumes:
+  postgres_data:
+
+networks:
+  backend:
+    driver: bridge
