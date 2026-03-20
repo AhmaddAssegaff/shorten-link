@@ -25,7 +25,9 @@ pipeline {
                 dir('be') {
                     withCredentials([file(credentialsId: 'shorten-link-env', variable: 'SECRET_FILE')]) {
                         sh """
-                            cp \$SECRET_FILE .env
+                            cat \$SECRET_FILE > .env
+
+                            chmod 644 .env
                             docker compose --env-file .env up -d --build
                         """
                     }
