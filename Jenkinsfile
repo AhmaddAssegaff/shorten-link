@@ -23,7 +23,12 @@ pipeline {
         stage('Build & Deploy') {
             steps {
                 dir('be') {
-                    sh 'docker compose up -d --build'
+                    withCredentials([file(credentialsId: 'shorten-link-env', variable: 'SECRET_FILE')]) {
+                        sh """
+                            cp \$SECRET_FILE .env
+                            docker compose up -d --build
+                        """
+                    }
                 }
             }
         }
