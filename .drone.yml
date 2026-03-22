@@ -45,6 +45,7 @@ steps:
         - sudo docker compose pull
         - sudo docker compose up -d
         - sudo docker image prune -f
+        - sudo docker logout ghcr.io
 
 trigger:
   branch:
