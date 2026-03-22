@@ -1,8 +1,6 @@
 services:
   app:
-    build:
-      context: .
-      dockerfile: dockerfile
+    image: ghcr.io/ahmadasgf/my-nestjs-app:latest 
     container_name: app-nest
     ports:
       - "3000:3000"

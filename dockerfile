@@ -35,7 +35,6 @@ COPY --chown=app:app package.json pnpm-lock.yaml ./
 RUN pnpm install --prod --frozen-lockfile --prefer-offline
 
 COPY --from=builder --chown=app:app /app/dist ./dist
-
 USER app
 
 EXPOSE 3000
