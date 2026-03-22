@@ -36,7 +36,11 @@ steps:
       key:
         from_secret: ssh_key
       port: 22
+      envs:
+        - ghcr_token
+        - ghcr_username
       script:
+        - echo $ghcr_token | sudo docker login ghcr.io -u $ghcr_username --password-stdin
         - cd ~/config-server/shorten-link-deployment
         - sudo docker compose pull
         - sudo docker compose up -d
