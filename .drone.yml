@@ -28,6 +28,20 @@ steps:
         from_secret: ghcr_token
       dockerfile: Dockerfile
 
+  - name: deploy-to-vps
+    image: appleboy/drone-ssh
+    settings:
+      host: drone.ahmadasgf.my.id
+      username: ahmadasgf
+      key:
+        from_secret: ssh_key
+      port: 22
+      script:
+        - cd ~/app/be
+        - sudo docker compose pull
+        - sudo docker compose up -d
+        - sudo docker image prune -f
+
 trigger:
   branch:
     - main
