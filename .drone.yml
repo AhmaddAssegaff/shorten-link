@@ -37,7 +37,7 @@ steps:
         from_secret: ssh_key
       port: 22
       script:
-      - cd ~/config-server/shorten-link-deployment
+        - cd ~/config-server/shorten-link-deployment
         - sudo docker compose pull
         - sudo docker compose up -d
         - sudo docker image prune -f
