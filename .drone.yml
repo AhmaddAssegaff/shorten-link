@@ -1,19 +1,14 @@
 kind: pipeline
 type: docker
-name: nestjs-ci-pipeline
+name: nestjs-ci-cd-pipeline
 
 steps:
-  - name: install-dependencies
+  - name: install-and-test
     image: node:20
     commands:
       - corepack enable
       - corepack prepare pnpm@latest --activate
       - pnpm install
-
-  - name: run-tests
-    image: node:20
-    commands:
-      - corepack enable
       - pnpm run test
 
   - name: build-and-push-to-ghcr
@@ -22,6 +17,9 @@ steps:
       registry: ghcr.io
       repo: ghcr.io/ahmaddassegaff/shorten-link
       auto_tag: true
+      pull: true
+      cache_from:
+        - ghcr.io/ahmaddassegaff/shorten-link
       username:
         from_secret: ghcr_username
       password:
