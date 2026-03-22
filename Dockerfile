@@ -31,9 +31,13 @@ ENV NODE_ENV=production
 
 RUN groupadd -g 1001 app && useradd -u 1001 -g app -s /bin/sh app
 
+WORKDIR /app
+
 COPY --chown=app:app package.json pnpm-lock.yaml ./
 RUN pnpm install --prod --frozen-lockfile --prefer-offline
 
+COPY --from=builder --chown=app:app /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder --chown=app:app /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder --chown=app:app /app/dist ./dist
 USER app
 
