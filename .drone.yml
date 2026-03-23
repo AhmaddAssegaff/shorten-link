@@ -29,11 +29,6 @@ steps:
 
   - name: deploy-to-vps
     image: appleboy/drone-ssh
-    environment:
-      ghcr_token:
-        from_secret: ghcr_token
-      ghcr_username:
-        from_secret: ghcr_username
     settings:
       host: drone.ahmadasgf.my.id
       username: ahmadasgf
@@ -44,10 +39,10 @@ steps:
         - ghcr_token
         - ghcr_username
       script:
-        - echo "$ghcr_token" | sudo docker login ghcr.io -u "$ghcr_username" --password-stdin
+        - echo "$${ghcr_token}" | sudo docker login ghcr.io -u "$${ghcr_username}" --password-stdin
         - cd ~/config-server/shorten-link-deployment
         - sudo docker compose pull
-        - sudo docker compose up -d
+        - sudo docker compose up -d --force-recreate
         - sudo docker image prune -f
         - sudo docker logout ghcr.io
 
