@@ -9,10 +9,10 @@ ENV PATH="$PNPM_HOME:$PATH"
 # --- STAGE 2: BUILDER ---
 FROM base AS builder
 COPY package.json pnpm-lock.yaml ./
-COPY prisma ./prisma/ 
+COPY prisma ./prisma/
 RUN pnpm config set side-effects-cache false
 RUN pnpm install --frozen-lockfile
-RUN pnpm exec prisma generate 
+RUN pnpm exec prisma generate
 
 COPY . .
 RUN pnpm run build
@@ -23,13 +23,16 @@ ENV NODE_ENV=production
 RUN groupadd -g 1001 app && useradd -u 1001 -g app -s /bin/sh app
 WORKDIR /app
 
-COPY --from=builder --chown=app:app /app/node_modules ./node_modules
-COPY --from=builder --chown=app:app /app/package.json ./package.json
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-lock.yaml ./
 
-COPY --from=builder --chown=app:app /app/dist ./dist
+RUN pnpm install --prod --frozen-lockfile
 
-COPY --from=builder --chown=app:app /app/src/generated ./src/generated
-COPY --from=builder --chown=app:app /app/src/generated ./dist/generated
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/prisma ./prisma
+
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 USER app
 EXPOSE 3000
