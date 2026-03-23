@@ -20,6 +20,10 @@ steps:
       pull: true
       cache_from:
         - ghcr.io/ahmaddassegaff/shorten-link
+      username:
+        from_secret: ghcr_username
+      password:
+        from_secret: ghcr_token
       build_args:
         BUILDKIT_INLINE_CACHE: 1
 

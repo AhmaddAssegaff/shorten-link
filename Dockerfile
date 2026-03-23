@@ -20,7 +20,6 @@ RUN pnpm exec prisma generate
 COPY . .
 RUN pnpm run build
 
-# buang devDependencies
 RUN pnpm prune --prod
 
 # --- STAGE 3: RUNNER ---
