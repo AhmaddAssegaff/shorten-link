@@ -5,6 +5,8 @@ import { ConfigurationModule } from './config.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { LoggerModule } from 'nestjs-pino';
 import { OpenTelemetryModule } from 'nestjs-otel';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { MetricsInterceptor } from './metrics.interceptor';
 
 @Module({
   imports: [
@@ -18,6 +20,12 @@ import { OpenTelemetryModule } from 'nestjs-otel';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: MetricsInterceptor,
+    },
+  ],
 })
 export class AppModule {}
