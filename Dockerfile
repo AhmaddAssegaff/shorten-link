@@ -3,29 +3,26 @@ FROM node:22-slim AS base
 RUN apt-get update && apt-get install -y openssl ca-certificates libgnutls30 && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 RUN corepack enable
-ENV PNPM_HOME="/pnpm"
+ENV PNPM_HOME="/usr/local/share/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
-# --- STAGE 2: DEPS ---
-FROM base AS deps
-# Salin file konfigurasi saja agar stage ini di-cache jika tidak ada perubahan package
+# --- STAGE 2: BUILDER ---
+FROM base AS builder
 COPY package.json pnpm-lock.yaml ./
 COPY prisma ./prisma/
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm install --frozen-lockfile
+RUN pnpm config set ignore-scripts false
+RUN pnpm config set side-effects-cache false
 
+RUN pnpm install --frozen-lockfile --prefer-offline
 RUN pnpm exec prisma generate
 
-# --- STAGE 3: BUILDER ---
-FROM base AS builder
-COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN pnpm run build
 
 RUN pnpm prune --prod
 
-# --- STAGE 4: RUNNER ---
+# --- STAGE 3: RUNNER ---
 FROM node:22-slim AS runner
 RUN apt-get update && apt-get install -y openssl ca-certificates libgnutls30 && rm -rf /var/lib/apt/lists/*
 
