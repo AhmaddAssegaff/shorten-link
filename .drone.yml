@@ -21,9 +21,9 @@ steps:
       cache_from:
         - ghcr.io/ahmaddassegaff/shorten-link
       username:
-        from_secret: ghcr_username
+        from_secret: GHCR_USERNAME
       password:
-        from_secret: ghcr_token
+        from_secret: GHCR_TOKEN
       build_args:
         BUILDKIT_INLINE_CACHE: 1
 
@@ -33,13 +33,14 @@ steps:
       host: drone.ahmadasgf.my.id
       username: ahmadasgf
       key:
-        from_secret: ssh_key
+        from_secret: SSH_KEY
       port: 22
       envs:
-        - ghcr_token
-        - ghcr_username
+        - GHCR_TOKEN
+        - GHCR_USERNAME
       script:
-        - echo "$${ghcr_token}" | sudo docker login ghcr.io -u "$${ghcr_username}" --password-stdin
+        - echo "Login as $GHCR_USERNAME"
+        - echo "$GHCR_TOKEN" | sudo docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
         - cd ~/config-server/shorten-link-deployment
         - sudo docker compose pull
         - sudo docker compose up -d --force-recreate
