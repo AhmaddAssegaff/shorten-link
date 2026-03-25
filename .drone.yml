@@ -29,6 +29,11 @@ steps:
 
   - name: deploy-to-vps
     image: appleboy/drone-ssh
+    # environment:
+    #   GHCR_USERNAME:
+    #     from_secret: GHCR_USERNAME
+    #   GHCR_TOKEN:
+    #     from_secret: GHCR_TOKEN
     settings:
       host: drone.ahmadasgf.my.id
       username: ahmadasgf
@@ -38,6 +43,10 @@ steps:
       envs:
         - GHCR_TOKEN
         - GHCR_USERNAME
+      GHCR_USERNAME:
+        from_secret: GHCR_USERNAME
+      GHCR_TOKEN:
+        from_secret: GHCR_TOKEN
       script:
         - echo "Login as $GHCR_USERNAME"
         - echo "$GHCR_TOKEN" | sudo docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
