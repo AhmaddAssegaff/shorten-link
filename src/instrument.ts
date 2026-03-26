@@ -18,11 +18,19 @@ import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-grpc';
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 
+const traceExporter = new OTLPTraceExporter({
+  url: 'grpc://otel-collector:4317',
+});
+
+const metricExporter = new OTLPMetricExporter({
+  url: 'grpc://otel-collector:4317',
+});
+
 const otel = new NodeSDK({
   metricReader: new PeriodicExportingMetricReader({
-    exporter: new OTLPMetricExporter(),
+    exporter: metricExporter,
   }),
-  spanProcessor: new BatchSpanProcessor(new OTLPTraceExporter()),
+  spanProcessor: new BatchSpanProcessor(traceExporter),
   contextManager: new AsyncLocalStorageContextManager(),
   textMapPropagator: new CompositePropagator({
     propagators: [new W3CTraceContextPropagator(), new W3CBaggagePropagator()],
