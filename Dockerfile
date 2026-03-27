@@ -38,4 +38,4 @@ COPY --from=builder --chown=app:app /app/prisma ./prisma
 
 USER app
 EXPOSE 3000
-CMD ["node", "dist/main.js"]
+CMD ["node", "--require", "./dist/instrument.js", "dist/main.js"]
