@@ -7,12 +7,26 @@ import { LoggerModule } from 'nestjs-pino';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { MetricsInterceptor } from './metrics.interceptor';
+import { trace, context } from '@opentelemetry/api';
 
 @Module({
   imports: [
     ConfigurationModule,
     PrismaModule,
-    LoggerModule.forRoot(),
+    LoggerModule.forRoot({
+      pinoHttp: {
+        mixin() {
+          const span = trace.getSpan(context.active());
+          if (!span) return {};
+
+          const spanContext = span.spanContext();
+          return {
+            trace_id: spanContext.traceId,
+            span_id: spanContext.spanId,
+          };
+        },
+      },
+    }),
     OpenTelemetryModule.forRoot({
       metrics: {
         hostMetrics: true,
