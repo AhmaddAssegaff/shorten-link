@@ -5,10 +5,9 @@ import { ConfigService } from '@nestjs/config';
 import { createDocument } from './swagger/swagger';
 import { CONSTANTS } from './configs';
 import otel from './instrument';
+otel.start();
 
 async function bootstrap() {
-  otel.start();
-
   const app = await NestFactory.create(AppModule);
 
   const config = app.get(ConfigService);
