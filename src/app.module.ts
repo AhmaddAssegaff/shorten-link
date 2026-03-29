@@ -5,8 +5,6 @@ import { ConfigurationModule } from './config.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { LoggerModule } from 'nestjs-pino';
 import { OpenTelemetryModule } from 'nestjs-otel';
-import { APP_INTERCEPTOR } from '@nestjs/core';
-import { MetricsInterceptor } from './metrics.interceptor';
 import { trace, context } from '@opentelemetry/api';
 
 @Module({
@@ -19,10 +17,10 @@ import { trace, context } from '@opentelemetry/api';
           const span = trace.getSpan(context.active());
           if (!span) return {};
 
-          const spanContext = span.spanContext();
+          const ctx = span.spanContext();
           return {
-            trace_id: spanContext.traceId,
-            span_id: spanContext.spanId,
+            trace_id: ctx.traceId,
+            span_id: ctx.spanId,
           };
         },
       },
@@ -34,12 +32,6 @@ import { trace, context } from '@opentelemetry/api';
     }),
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: MetricsInterceptor,
-    },
-  ],
+  providers: [AppService],
 })
 export class AppModule {}

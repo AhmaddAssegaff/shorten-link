@@ -14,16 +14,18 @@ import { PrismaInstrumentation } from '@prisma/instrumentation';
 import { PinoInstrumentation } from '@opentelemetry/instrumentation-pino';
 
 // Exporters
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
-import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-grpc';
+// import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
+// import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-grpc';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 
 const traceExporter = new OTLPTraceExporter({
-  url: 'grpc://otel-collector:4317',
+  url: 'http://alloy:4318/v1/traces',
 });
 
 const metricExporter = new OTLPMetricExporter({
-  url: 'grpc://otel-collector:4317',
+  url: 'http://alloy:4318/v1/metrics',
 });
 
 const otel = new NodeSDK({
