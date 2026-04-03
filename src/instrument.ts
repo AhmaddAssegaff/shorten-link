@@ -7,6 +7,9 @@ import {
   W3CBaggagePropagator,
 } from '@opentelemetry/core';
 
+import { Resource } from '@opentelemetry/resources';
+import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
+
 // Instrumentations
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { NestInstrumentation } from '@opentelemetry/instrumentation-nestjs-core';
@@ -36,7 +39,10 @@ const logExporter = new OTLPLogExporter({
 });
 
 const otel = new NodeSDK({
-  serviceName: process.env.OTEL_SERVICE_NAME || 'shorten-link-app',
+  resource: new Resource({
+    [ATTR_SERVICE_NAME]: 'shorten-link-app',
+  }),
+
   metricReader: new PeriodicExportingMetricReader({
     exporter: metricExporter,
   }),
