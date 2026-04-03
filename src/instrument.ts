@@ -13,33 +13,41 @@ import { NestInstrumentation } from '@opentelemetry/instrumentation-nestjs-core'
 import { PrismaInstrumentation } from '@prisma/instrumentation';
 import { PinoInstrumentation } from '@opentelemetry/instrumentation-pino';
 
-// Exporters
-// import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
-// import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-grpc';
+// Exporters & Log SDK
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
+import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
+import { SimpleLogRecordProcessor } from '@opentelemetry/sdk-logs';
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 
+const collectorUrl =
+  process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://otel-collector:4318';
+
 const traceExporter = new OTLPTraceExporter({
-  url: 'http://alloy:4318/v1/traces',
+  url: `${collectorUrl}/v1/traces`,
 });
 
 const metricExporter = new OTLPMetricExporter({
-  url: 'http://alloy:4318/v1/metrics',
+  url: `${collectorUrl}/v1/metrics`,
+});
+
+const logExporter = new OTLPLogExporter({
+  url: `${collectorUrl}/v1/logs`,
 });
 
 const otel = new NodeSDK({
+  serviceName: process.env.OTEL_SERVICE_NAME || 'shorten-link-app',
   metricReader: new PeriodicExportingMetricReader({
     exporter: metricExporter,
   }),
   spanProcessor: new BatchSpanProcessor(traceExporter),
+  logRecordProcessor: new SimpleLogRecordProcessor(logExporter),
   contextManager: new AsyncLocalStorageContextManager(),
   textMapPropagator: new CompositePropagator({
     propagators: [new W3CTraceContextPropagator(), new W3CBaggagePropagator()],
   }),
   instrumentations: [
     getNodeAutoInstrumentations({
-      // Matikan yang tidak perlu agar tidak overhead
       '@opentelemetry/instrumentation-fs': { enabled: false },
     }),
     new NestInstrumentation(),
