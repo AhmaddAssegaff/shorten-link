@@ -4,7 +4,6 @@ import { AppService } from './app.service';
 import { ConfigurationModule } from './config.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { LoggerModule } from 'nestjs-pino';
-import { OpenTelemetryModule } from 'nestjs-otel';
 import { trace, context } from '@opentelemetry/api';
 
 @Module({
@@ -23,11 +22,6 @@ import { trace, context } from '@opentelemetry/api';
             span_id: ctx.spanId,
           };
         },
-      },
-    }),
-    OpenTelemetryModule.forRoot({
-      metrics: {
-        hostMetrics: true,
       },
     }),
   ],

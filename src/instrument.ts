@@ -17,26 +17,36 @@ import { PrismaInstrumentation } from '@prisma/instrumentation';
 import { PinoInstrumentation } from '@opentelemetry/instrumentation-pino';
 
 // Exporters & Log SDK
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
-import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
-import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
-import { SimpleLogRecordProcessor } from '@opentelemetry/sdk-logs';
+// import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
+
+// import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-grpc';
+
+// import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
+// import { SimpleLogRecordProcessor } from '@opentelemetry/sdk-logs';
+
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 
-const collectorUrl =
-  process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://otel-collector:4318';
+import { ConsoleSpanExporter } from '@opentelemetry/sdk-trace-base';
 
-const traceExporter = new OTLPTraceExporter({
-  url: `${collectorUrl}/v1/traces`,
-});
+// const collectorUrl =
+//   process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://otel-collector:4317';
+
+const traceExporter =
+  process.env.NODE_ENV === 'development'
+    ? new ConsoleSpanExporter()
+    : new OTLPTraceExporter({
+        url: 'otel-collector:4317',
+      });
 
 const metricExporter = new OTLPMetricExporter({
-  url: `${collectorUrl}/v1/metrics`,
+  url: 'otel-collector:4317',
 });
 
-const logExporter = new OTLPLogExporter({
-  url: `${collectorUrl}/v1/logs`,
-});
+// const logExporter = new OTLPLogExporter({
+//   url: `${collectorUrl}/v1/logs`,
+// });
 
 const otel = new NodeSDK({
   resource: new Resource({
@@ -47,7 +57,7 @@ const otel = new NodeSDK({
     exporter: metricExporter,
   }),
   spanProcessor: new BatchSpanProcessor(traceExporter),
-  logRecordProcessor: new SimpleLogRecordProcessor(logExporter),
+  // logRecordProcessor: new SimpleLogRecordProcessor(logExporter),
   contextManager: new AsyncLocalStorageContextManager(),
   textMapPropagator: new CompositePropagator({
     propagators: [new W3CTraceContextPropagator(), new W3CBaggagePropagator()],
@@ -55,8 +65,6 @@ const otel = new NodeSDK({
   instrumentations: [
     getNodeAutoInstrumentations({
       '@opentelemetry/instrumentation-fs': { enabled: false },
-      '@opentelemetry/instrumentation-express': { enabled: true },
-      '@opentelemetry/instrumentation-http': { enabled: true },
     }),
     new NestInstrumentation(),
     new PrismaInstrumentation(),
