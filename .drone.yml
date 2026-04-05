@@ -28,18 +28,6 @@ steps:
       build_args:
         BUILDKIT_INLINE_CACHE: 1
 
-  - name: prisma migrate
-    image: node:22-slim
-    environment:
-      DATABASE_URL:
-        from_secret: DATABASE_URL
-    commands:
-      - corepack enable
-      - corepack prepare pnpm@latest --activate
-      - pnpm install
-      - export DATABASE_URL=$DATABASE_URL
-      - npx prisma db push
-
   - name: deploy-to-vps
     image: appleboy/drone-ssh
     environment:
@@ -60,6 +48,7 @@ steps:
         - sudo docker compose pull
         - sudo docker compose up -d --force-recreate
         - sudo docker image prune -f
+        - docker exec -it shorten-link-app npx prisma db push
         - sudo docker logout ghcr.io
 
 trigger:
