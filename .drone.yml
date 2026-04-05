@@ -30,6 +30,9 @@ steps:
 
   - name: prisma migrate
     image: node:22-slim
+    environment:
+      DATABASE_URL:
+        from_secret: DATABASE_URL
     commands:
       - corepack enable
       - corepack prepare pnpm@latest --activate
