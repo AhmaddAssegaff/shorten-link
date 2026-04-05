@@ -9,6 +9,7 @@ steps:
       - corepack enable
       - corepack prepare pnpm@latest --activate
       - pnpm install
+      - npx prisma generate 
       - pnpm run test
 
   - name: build-and-push-to-ghcr
