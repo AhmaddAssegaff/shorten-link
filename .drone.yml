@@ -28,6 +28,15 @@ steps:
       build_args:
         BUILDKIT_INLINE_CACHE: 1
 
+  - name: prisma migrate
+    image: node:22-slim
+    commands:
+      - corepack enable
+      - corepack prepare pnpm@latest --activate
+      - pnpm install
+      - export DATABASE_URL=$DATABASE_URL
+      - npx prisma db push
+
   - name: deploy-to-vps
     image: appleboy/drone-ssh
     environment:

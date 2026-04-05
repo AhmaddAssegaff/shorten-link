@@ -19,7 +19,6 @@ RUN pnpm exec prisma generate
 
 COPY . .
 RUN pnpm run build
-RUN npx prisma db push
 RUN pnpm prune --prod
 
 # --- STAGE 3: RUNNER ---
