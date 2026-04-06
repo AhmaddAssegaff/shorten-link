@@ -4,7 +4,7 @@ name: nestjs-ci-cd
 
 steps:
   - name: install-and-test
-    image: node:22
+    image: node:22-slim
     commands:
       - corepack enable
       - corepack prepare pnpm@latest --activate
