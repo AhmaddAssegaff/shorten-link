@@ -1,40 +1,18 @@
 kind: pipeline
 type: docker
-name: nestjs-ci-cd-pipeline
+name: nestjs-ci-cd
 
 steps:
   - name: install-and-test
-    image: node:22-slim
+    image: node:22
     commands:
       - corepack enable
       - corepack prepare pnpm@latest --activate
-      - pnpm install
-      - npx prisma generate 
+      - pnpm install --prefer-offline
       - pnpm run test
-
-  - name: build-and-push-to-ghcr
-    image: plugins/docker
-    settings:
-      registry: ghcr.io
-      repo: ghcr.io/ahmaddassegaff/shorten-link
-      auto_tag: true
-      pull: true
-      cache_from:
-        - ghcr.io/ahmaddassegaff/shorten-link
-      username:
-        from_secret: GHCR_USERNAME
-      password:
-        from_secret: GHCR_TOKEN
-      build_args:
-        BUILDKIT_INLINE_CACHE: 1
 
   - name: deploy-to-vps
     image: appleboy/drone-ssh
-    environment:
-      GHCR_USERNAME:
-        from_secret: GHCR_USERNAME
-      GHCR_TOKEN:
-        from_secret: GHCR_TOKEN
     settings:
       host: drone.ahmadasgf.my.id
       username: ahmadasgf
@@ -42,14 +20,29 @@ steps:
         from_secret: SSH_KEY
       port: 22
       script:
-        - echo "Login as $GHCR_USERNAME"
-        - echo "$GHCR_TOKEN" | sudo docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
-        - cd ~/config-server/shorten-link-deployment
-        - sudo docker compose pull
-        - sudo docker compose up -d --force-recreate
-        - sudo docker image prune -f
-        - docker exec -it shorten-link-app npx prisma db push
-        - sudo docker logout ghcr.io
+        - cd ~/apps/shorten-link || mkdir -p ~/apps/shorten-link && cd ~/apps/shorten-link
+        - |
+          if [ ! -d ".git" ]; then
+            git clone https://github.com/ahmaddassegaff/shorten-link .
+          fi
+
+        - git fetch origin
+        - git reset --hard origin/main
+
+        - export PNPM_HOME="/usr/local/share/pnpm"
+        - export PATH="$PNPM_HOME:$PATH"
+        - corepack enable
+        - corepack prepare pnpm@latest --activate
+        - pnpm install --prod --prefer-offline
+        - pnpm run build
+        - |
+          if pm2 describe shorten-link > /dev/null; then
+            pm2 reload shorten-link
+          else
+            pm2 start dist/main.js --name shorten-link
+          fi
+
+        - pm2 save
 
 trigger:
   branch:
