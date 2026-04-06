@@ -95,7 +95,7 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "setupFiles": [
-      "<rootDir>/tests/setup.spec.ts"
+      "<rootDir>/tests/setup.ts"
     ],
     "collectCoverageFrom": [
       "**/*.(t|j)s"
