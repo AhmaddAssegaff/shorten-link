@@ -13,7 +13,6 @@ import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 // Instrumentations
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { NestInstrumentation } from '@opentelemetry/instrumentation-nestjs-core';
-import { PrismaInstrumentation } from '@prisma/instrumentation';
 import { PinoInstrumentation } from '@opentelemetry/instrumentation-pino';
 
 // Exporters & Log SDK
@@ -67,7 +66,6 @@ const otel = new NodeSDK({
       '@opentelemetry/instrumentation-fs': { enabled: false },
     }),
     new NestInstrumentation(),
-    new PrismaInstrumentation(),
     new PinoInstrumentation({
       logKeys: {
         traceId: 'trace_id',
