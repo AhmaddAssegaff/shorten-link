@@ -2,14 +2,14 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigurationModule } from './config.module';
-import { PrismaModule } from './prisma/prisma.module';
+import { DrizzleModule } from './database/drizzle.module';
 import { LoggerModule } from 'nestjs-pino';
 import { trace, context } from '@opentelemetry/api';
 
 @Module({
   imports: [
     ConfigurationModule,
-    PrismaModule,
+    DrizzleModule,
     LoggerModule.forRoot({
       pinoHttp: {
         mixin() {

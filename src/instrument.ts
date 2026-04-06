@@ -27,6 +27,7 @@ import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-grpc';
 
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 
+import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
 import { ConsoleSpanExporter } from '@opentelemetry/sdk-trace-base';
 
 // const collectorUrl =
@@ -66,6 +67,9 @@ const otel = new NodeSDK({
       '@opentelemetry/instrumentation-fs': { enabled: false },
     }),
     new NestInstrumentation(),
+    new PgInstrumentation({
+      enhancedDatabaseReporting: true,
+    }),
     new PinoInstrumentation({
       logKeys: {
         traceId: 'trace_id',
@@ -74,6 +78,14 @@ const otel = new NodeSDK({
       },
     }),
   ],
+});
+
+process.on('SIGTERM', () => {
+  otel
+    .shutdown()
+    .then(() => console.log('Tracing terminated'))
+    .catch((error) => console.log('Error terminating tracing', error))
+    .finally(() => process.exit(0));
 });
 
 export default otel;
