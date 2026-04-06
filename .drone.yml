@@ -20,7 +20,16 @@ steps:
         from_secret: SSH_KEY
       port: 22
       script:
+        - export NVM_DIR="$HOME/.nvm"
+        - nvm use 22
+        - export PATH="$HOME/.nvm/versions/node/v22.22.2/bin:$PATH"
+        -
+          if [ -s "$NVM_DIR/nvm.sh" ]; then
+            . "$NVM_DIR/nvm.sh"
+          fi
+
         - cd ~/apps/shorten-link || mkdir -p ~/apps/shorten-link && cd ~/apps/shorten-link
+
         - |
           if [ ! -d ".git" ]; then
             git clone https://github.com/ahmaddassegaff/shorten-link .
@@ -29,12 +38,9 @@ steps:
         - git fetch origin
         - git reset --hard origin/main
 
-        - export PNPM_HOME="/usr/local/share/pnpm"
-        - export PATH="$PNPM_HOME:$PATH"
-        - corepack enable
-        - corepack prepare pnpm@latest --activate
         - pnpm install --prod --prefer-offline
         - pnpm run build
+
         - |
           if pm2 describe shorten-link > /dev/null; then
             pm2 reload shorten-link
