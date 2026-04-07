@@ -1,22 +1,31 @@
 kind: pipeline
-type: exec
+type: docker
 name: nestjs-ci-cd
 
 steps:
   - name: test
+    image: node:22-slim
     commands:
-      - set -e
       - corepack enable
       - corepack prepare pnpm@latest --activate
       - pnpm install
       - pnpm run test
 
   - name: deploy
+    image: alpine
     environment:
       VPS_IP:
         from_secret: VPS_IP
+      SSH_KEY:
+        from_secret: SSH_KEY
     commands:
-      - set -e
+      - apk add --no-cache openssh-client git
+
+      - mkdir -p ~/.ssh
+      - echo "$SSH_KEY" > ~/.ssh/id_rsa
+      - chmod 600 ~/.ssh/id_rsa
+      - ssh-keyscan -H $VPS_IP >> ~/.ssh/known_hosts
+
       - |
         ssh -p 22 ahmadasgf@$VPS_IP << 'EOF'
           set -e
