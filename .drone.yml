@@ -1,50 +1,49 @@
 kind: pipeline
-type: docker
+type: exec
 name: nestjs-ci-cd
 
 steps:
-  - name: install-and-test
-    image: node:22-slim
+  - name: test
     commands:
+      - set -e
       - corepack enable
       - corepack prepare pnpm@latest --activate
-      - pnpm install --prefer-offline
+      - pnpm install
       - pnpm run test
 
-  - name: deploy-to-vps
-    image: appleboy/drone-ssh
-    settings:
-      host: drone.ahmadasgf.my.id
-      username: ahmadasgf
-      key:
-        from_secret: SSH_KEY
-      port: 22
-      script:
-        - export PATH="$HOME/.nvm/versions/node/v22.22.2/bin:$PATH"
-        - node -v
-        - pnpm -v
+  - name: deploy
+    environment:
+      VPS_IP:
+        from_secret: VPS_IP
+    commands:
+      - set -e
+      - |
+        ssh -p 22 ahmadasgf@$VPS_IP << 'EOF'
+          set -e
 
-        - cd ~/apps/shorten-link || mkdir -p ~/apps/shorten-link && cd ~/apps/shorten-link
+          export PATH="$HOME/.nvm/versions/node/v22.22.2/bin:$PATH"
 
-        - |
+          mkdir -p ~/apps/shorten-link
+          cd ~/apps/shorten-link
+
           if [ ! -d ".git" ]; then
             git clone https://github.com/ahmaddassegaff/shorten-link .
           fi
 
-        - git fetch origin
-        - git reset --hard origin/main
+          git fetch origin
+          git reset --hard origin/main
 
-        - pnpm install --prod --prefer-offline
-        - pnpm run build
+          pnpm install
+          pnpm run build
 
-        - |
           if pm2 describe shorten-link > /dev/null; then
             pm2 reload shorten-link
           else
             pm2 start dist/main.js --name shorten-link
           fi
 
-        - pm2 save
+          pm2 save
+        EOF
 
 trigger:
   branch:
