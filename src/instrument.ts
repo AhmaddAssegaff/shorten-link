@@ -27,7 +27,7 @@ import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-grpc';
 
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 
-import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
+// import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
 import { ConsoleSpanExporter } from '@opentelemetry/sdk-trace-base';
 
 // const collectorUrl =
@@ -67,9 +67,9 @@ const otel = new NodeSDK({
       '@opentelemetry/instrumentation-fs': { enabled: false },
     }),
     new NestInstrumentation(),
-    new PgInstrumentation({
-      enhancedDatabaseReporting: true,
-    }),
+    // new PgInstrumentation({
+    //   enhancedDatabaseReporting: true,
+    // }),
     new PinoInstrumentation({
       logKeys: {
         traceId: 'trace_id',
